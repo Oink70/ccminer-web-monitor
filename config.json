@@ -1,0 +1,5 @@
+{
+    "MINING_IPS": ["ipaddress1", "ipaddress2"],
+    "MINING_PORT": 4068,
+    "CHECK_INTERVAL": 10000
+}
