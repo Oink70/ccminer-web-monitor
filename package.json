@@ -1,17 +1,27 @@
 {
   "name": "ws-ccminer",
   "version": "1.0.0",
-  "description": "",
+  "description": "For monitoring mining devices",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "paco-darthvadr",
   "license": "ISC",
   "dependencies": {
     "chalk": "^4.1.0",
     "chart.js": "^4.4.7",
     "ws": "^8.18.0"
-  }
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/paco-darthvadr/ws-ccminer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/paco-darthvadr/ws-ccminer/issues"
+  },
+  "homepage": "https://github.com/paco-darthvadr/ws-ccminer#readme"
 }
