@@ -10,6 +10,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "chart.js": "^4.4.7"
+    "chalk": "^4.1.0",
+    "chart.js": "^4.4.7",
+    "ws": "^8.18.0"
   }
 }
