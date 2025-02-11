@@ -3,12 +3,21 @@ const WebSocket = require("ws");
 const http = require("http");
 const chalk = require('chalk');
 const fs = require('fs');
+const express = require('express');
 
 const config = JSON.parse(fs.readFileSync("config.json", "utf-8"));
 const { MINING_IPS, MINING_PORT, CHECK_INTERVAL } = config;
 
-const server = http.createServer();
+const app = express();
+const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
+
+app.use(express.static("public"));
+
+app.get("/", (req,res) => {
+    res.sendFile(__dirname + "/public/index.html");
+})
+
 let clients = new Set();
 
 wss.on("connection", (ws) => {
@@ -75,5 +84,5 @@ function broadcast(data) {
 setInterval(queryAllMiners, CHECK_INTERVAL);
 
 server.listen(5000, () => {
-    console.log(chalk.green("WebSocket server running on ws://localhost:5000"));
+    console.log(chalk.green("WebSocket server running on http://127.0.0.1:5000"));
 });

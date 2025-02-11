@@ -13,9 +13,9 @@
   "dependencies": {
     "chalk": "^4.1.0",
     "chart.js": "^4.4.7",
+    "express": "^4.21.2",
     "ws": "^8.18.0"
   },
-  "devDependencies": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/paco-darthvadr/ws-ccminer.git"
