@@ -1,6 +1,15 @@
 # ws-ccminer
 For monitoring mining devices
 
-Each mining device has an API, create a config.json on each device to allow the api
-In the api-allow, place the network range for your network
+CCminer needs to have the api allowed on each device in a config.json
+
+# Install
+
+cd ws-ccminer
+
+npm install
+
+# start app
+
+node server.js
 
