@@ -1,11 +1,11 @@
 const net = require("net");
 const WebSocket = require("ws");
 const http = require("http");
-const chalk = require('chalk')
+const chalk = require('chalk');
+const fs = require('fs');
 
-const MINING_IPS = ["ip-address1", "ip-address2"]; // Add multiple IPs here
-const MINING_PORT = 4068;
-const CHECK_INTERVAL = 10000;
+const config = JSON.parse(fs.readFileSync("config.json", "utf-8"));
+const { MINING_IPS, MINING_PORT, CHECK_INTERVAL } = config;
 
 const server = http.createServer();
 const wss = new WebSocket.Server({ server });
