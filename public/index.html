@@ -75,7 +75,7 @@
     <script>
         var charts = {};
 
-        var ws = new WebSocket('ws://localhost:5000');
+        var ws = new WebSocket(`ws://${window.location.host}`);
 
         ws.onmessage = function (event) {
             var data = JSON.parse(event.data);
