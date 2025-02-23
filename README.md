@@ -17,5 +17,5 @@ npm install
 
 node server.js
 
-Open your browser at http://yourIP:5000
+Open your browser at yourIP:5000
 
