@@ -5,8 +5,9 @@ const chalk = require('chalk');
 const fs = require('fs');
 const express = require('express');
 
+
 const config = JSON.parse(fs.readFileSync("config.json", "utf-8"));
-const { MINING_IPS, MINING_PORT, CHECK_INTERVAL } = config;
+const { MINING_IPS, MINING_PORT, CHECK_INTERVAL, PORT, HOST } = config;
 
 const app = express();
 const server = http.createServer(app);
@@ -14,11 +15,46 @@ const wss = new WebSocket.Server({ server });
 
 app.use(express.static("public"));
 
+let clients = new Set();
+
 app.get("/", (req,res) => {
     res.sendFile(__dirname + "/public/index.html");
-})
+});
+app.get("/miners", (req, res) => {
+    let statuses = MINING_IPS.map(ip => ({
+        ip,
+        online: false  // Default to offline
+    }));
 
-let clients = new Set();
+    let checkPromises = MINING_IPS.map(ip => 
+        new Promise(resolve => {
+            const client = new net.Socket();
+            client.setTimeout(2000);
+
+            client.connect(MINING_PORT, ip, () => {
+                client.end();
+                resolve({ ip, online: true });
+            });
+
+            client.on("error", () => resolve({ ip, online: false }));
+            client.on("timeout", () => {
+                client.destroy();
+                resolve({ ip, online: false });
+            });
+        })
+    );
+
+    Promise.all(checkPromises).then(results => {
+        results.forEach(result => {
+            let miner = statuses.find(m => m.ip === result.ip);
+            if (miner) miner.online = result.online;
+        });
+
+        res.json(statuses);
+    });
+});
+
+
 
 wss.on("connection", (ws) => {
     clients.add(ws);
@@ -83,6 +119,7 @@ function broadcast(data) {
 
 setInterval(queryAllMiners, CHECK_INTERVAL);
 
-server.listen(5000, () => {
-    console.log(chalk.green("WebSocket server running on http://127.0.0.1:5000"));
+
+server.listen(PORT, HOST, () => {
+    console.log(`Server running at http://${HOST}:${PORT}`);
 });
