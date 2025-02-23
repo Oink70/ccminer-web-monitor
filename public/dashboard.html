@@ -1,0 +1,103 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mining Stats Dashboard</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #1e1e1e;
+            color: white;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            font-size: 2rem;
+            color: #00d4ff;
+            text-shadow: 0px 0px 10px rgba(0, 212, 255, 0.8);
+        }
+        .chart-container {
+            margin-top: 20px;
+        }
+        #waitingMessage {
+            font-size: 1.2rem;
+            color: #aaa;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="pageTitle">Mining Stats Dashboard</h1>
+    <div id="waitingMessage">Waiting for data...</div>
+    <div id="chartContainer" class="chart-container"></div>
+
+    <script>
+        // Get selected IP from URL parameters
+        function getQueryParam(param) {
+            let urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        var selectedIP = getQueryParam("ip");
+
+        if (!selectedIP) {
+            document.body.innerHTML = "<h1>No IP selected!</h1>";
+            throw new Error("No IP provided");
+        }
+
+        document.title = `Mining Stats - ${selectedIP}`;
+        document.getElementById("pageTitle").innerText = `Mining Stats for ${selectedIP}`;
+
+        var chart = Highcharts.chart("chartContainer", {
+            chart: { type: "line", backgroundColor: "transparent" },
+            title: { text: `Hashrate - ${selectedIP}`, style: { color: "#00d4ff" } },
+            xAxis: { 
+                type: "datetime",
+                labels: { style: { color: "#ffffff" } },
+                title: { text: "Time", style: { color: "#ffffff" } }
+            },
+            yAxis: { 
+                title: { text: "KHS (MH/s)", style: { color: "#ffffff" } },
+                labels: { style: { color: "#ffffff" } }
+            },
+            legend: { itemStyle: { color: "#ffffff" } },
+            series: [{ name: "Hashrate (KHS)", data: [], color: "#00d4ff" }],
+            exporting: {
+                buttons: {
+                    contextButton: {
+                        menuItems: [
+                            "viewFullscreen",
+                            "separator",
+                            "downloadPNG",
+                            "downloadJPEG",
+                            "downloadSVG",
+                            "downloadPDF"
+                        ]
+                    }
+                }
+            }
+        });
+
+        var ws = new WebSocket(`ws://${window.location.host}`);
+
+        ws.onmessage = function(event) {
+            var data = JSON.parse(event.data);
+
+            // Check if the data is for the selected IP
+            if (data[selectedIP] !== undefined) {
+                $('#waitingMessage').hide();
+
+                let timestamp = (new Date()).getTime();
+                let khs = parseFloat(data[selectedIP]);
+
+                chart.series[0].addPoint([timestamp, khs], true, chart.series[0].data.length > 100);
+            }
+        };
+    </script>
+</body>
+</html>
