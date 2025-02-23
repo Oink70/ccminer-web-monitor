@@ -19,3 +19,7 @@ node server.js
 
 Open your browser at yourIP:5000
 
+# Note: 
+
+You may neeed to make a firewall rule
+
