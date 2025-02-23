@@ -3,127 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mining Stats Dashboard</title>
+    <title>Mining Dashboard - Home</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://code.highcharts.com/highcharts.js"></script>
     <style>
         body {
             font-family: 'Arial', sans-serif;
             background-color: #1e1e1e;
             color: white;
-            margin: 0;
-            padding: 20px;
             text-align: center;
+            padding: 20px;
         }
         h1 {
-            font-size: 2rem;
-            text-transform: uppercase;
-            margin-bottom: 20px;
             color: #00d4ff;
             text-shadow: 0px 0px 10px rgba(0, 212, 255, 0.8);
         }
-        .chart-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 20px;
-            padding-top: 20px;
+        .miners-list {
+            list-style: none;
+            padding: 0;
         }
-        .chart-box {
-            width: 45%;
-            min-width: 320px;
-            height: 400px;
+        .miner {
+            padding: 15px;
+            margin: 10px auto;
+            width: 50%;
             background: linear-gradient(145deg, #2b2b2b, #1a1a1a);
-            box-shadow: 4px 4px 10px #111, -4px -4px 10px #333;
             border-radius: 12px;
-            padding: 20px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .chart-box:hover {
-            transform: translateY(-5px);
-            box-shadow: 6px 6px 15px #000, -6px -6px 15px #444;
-        }
-        .chart-box h3 {
-            color: #00d4ff;
-            text-shadow: 0px 0px 8px rgba(0, 212, 255, 0.7);
-            font-size: 1.5rem;
-            margin-bottom: 10px;
-        }
-        #waitingMessage {
+            transition: 0.3s;
+            cursor: pointer;
             font-size: 1.2rem;
-            color: #aaa;
-            padding: 10px;
+            box-shadow: 4px 4px 10px #111, -4px -4px 10px #333;
         }
-        .live-data {
-            animation: glow 1.5s infinite alternate;
+        .miner:hover {
+            background: #00d4ff;
+            color: black;
         }
-        @keyframes glow {
-            from {
-                text-shadow: 0 0 5px #00d4ff;
-            }
-            to {
-                text-shadow: 0 0 15px #00d4ff;
-            }
+        .online {
+            color: limegreen;
+        }
+        .offline {
+            color: red;
         }
     </style>
 </head>
 <body>
-    <h1>Mining Stats Dashboard</h1>
-    <div id="waitingMessage">Waiting for data...</div>
-    <div class="chart-container" id="chartsContainer"></div>
+    <h1>Mining Dashboard</h1>
+    <ul class="miners-list" id="minersList">Loading miners...</ul>
 
     <script>
-        var charts = {};
+        function loadMiners() {
+            fetch('/miners')
+                .then(response => response.json())
+                .then(miners => {
+                    const list = document.getElementById('minersList');
+                    list.innerHTML = '';
 
-        var ws = new WebSocket(`ws://${window.location.host}`);
+                    miners.forEach(miner => {
+                        let li = document.createElement('li');
+                        li.className = 'miner';
+                        li.innerHTML = `<span>${miner.ip}</span> - <span class="${miner.online ? 'online' : 'offline'}">${miner.online ? 'Online' : 'Offline'}</span>`;
+                        
+                        if (miner.online) {
+                            li.onclick = () => {
+                                window.location.href = `/dashboard.html?ip=${miner.ip}`;
+                            };
+                        }
 
-        ws.onmessage = function (event) {
-            var data = JSON.parse(event.data);
-            updateDashboard(data);
-        };
-
-        function updateDashboard(data) {
-            $('#waitingMessage').hide();
-
-            Object.keys(data).forEach(ip => {
-                if (!charts[ip]) {
-                    createChart(ip);
-                }
-
-                let chart = charts[ip];
-                let timestamp = (new Date()).getTime();
-                let khs = parseFloat(data[ip]);
-
-                chart.series[0].addPoint([timestamp, khs], true, chart.series[0].data.length > 100);
-                $('#chart-' + ip).addClass('live-data');
-                setTimeout(() => $('#chart-' + ip).removeClass('live-data'), 1000);
-            });
+                        list.appendChild(li);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching miners:', error);
+                    document.getElementById('minersList').innerHTML = 'Failed to load miners';
+                });
         }
 
-        function createChart(ip) {
-            let container = document.createElement('div');
-            container.classList.add('chart-box');
-            container.id = 'chart-' + ip;
-            document.getElementById('chartsContainer').appendChild(container);
-        
-            charts[ip] = Highcharts.chart(container, {
-                chart: { type: 'line', backgroundColor: 'transparent' },
-                title: { text: 'Hashrate - ' + ip, style: { color: '#00d4ff' } },
-                xAxis: { 
-                    type: 'datetime',
-                    labels: { style: { color: '#ffffff' } },
-                    title: { text: 'Time', style: { color: '#ffffff' } }
-                },
-                yAxis: { 
-                    title: { text: 'KHS (MH/s)', style: { color: '#ffffff' } },
-                    labels: { style: { color: '#ffffff' } }
-                },
-                legend: { itemStyle: { color: '#ffffff' } },
-                series: [
-                    { name: 'Hashrate (KHS)', data: [], color: '#00d4ff' }
-                ]
-            });
-        }
+        setInterval(loadMiners, 5000);
+        loadMiners();
     </script>
 </body>
 </html>
